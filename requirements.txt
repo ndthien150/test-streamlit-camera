@@ -1,5 +1,5 @@
+opencv-python
 matplotlib
 numpy
-opencv-python
 Pillow
 streamlit-webrtc
