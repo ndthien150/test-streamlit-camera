@@ -1,5 +1,5 @@
-matplotlib==3.5.3
-numpy==1.23.1
-opencv-python==4.6.0.66
-Pillow==9.2.0
-streamlit-webrtc==0.43.4
+matplotlib
+numpy
+opencv-python
+Pillow
+streamlit-webrtc
