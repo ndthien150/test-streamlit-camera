@@ -1,27 +1,34 @@
-# import cv2
-# import streamlit as st
-#
-#
-# st.title("Camera Application")
-# run = st.checkbox('Run')
-# Frame_window = st.image([])
-# cam = cv2.VideoCapture(1)
-#
-# while run:
-#     ret, frame = cam.read()
-#     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-#     Frame_window.image(frame)
-# else:
-#     st.write("Stopped")
+import threading
 
+import cv2
 import streamlit as st
+from matplotlib import pyplot as plt
 
-img_file_buffer = st.camera_input("Take a picture")
+from streamlit_webrtc import webrtc_streamer
 
-if img_file_buffer is not None:
-    # To read image file buffer as bytes:
-#     bytes_data = img_file_buffer.getvalue()
-#     # Check the type of bytes_data:
-#     # Should output: <class 'bytes'>
-#     st.write(type(bytes_data))
-    st.image(img_file_buffer)
+lock = threading.Lock()
+img_container = {"img": None}
+
+
+def video_frame_callback(frame):
+    img = frame.to_ndarray(format="bgr24")
+    with lock:
+        img_container["img"] = img
+
+    return frame
+
+
+ctx = webrtc_streamer(key="example", video_frame_callback=video_frame_callback)
+
+fig_place = st.empty()
+fig, ax = plt.subplots(1, 1)
+
+while ctx.state.playing:
+    with lock:
+        img = img_container["img"]
+    if img is None:
+        continue
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ax.cla()
+    ax.hist(gray.ravel(), 256, [0, 256])
+    fig_place.pyplot(fig)
